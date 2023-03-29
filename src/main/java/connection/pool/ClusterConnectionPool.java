@@ -42,22 +42,26 @@ public class ClusterConnectionPool {
     private Connection roundRobin() {
 
         while(true) {
+            sleep(1000);
             ComponentConnectionPool componentConnectionPool = componentConnectionPoolList.get(index);
             index++;
             if( index == componentConnectionPoolList.size())
                 index = index % componentConnectionPoolList.size();
             if (!componentConnectionPool.isWorking()) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                System.out.println("!!!!!!!!!!!!! " +componentConnectionPool.getDatabase().toString() + " is not working....");
+                System.out.println("!!!!!!!!!!!!! " +componentConnectionPool.getDatabase().toString() + " is not working...." + componentConnectionPool.isWorking());
                 continue;
             }
             Connection connection = componentConnectionPool.getLogicalConnection();
             if (connection != null)
                 return connection;
+        }
+    }
+
+    private void sleep(int delay) {
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

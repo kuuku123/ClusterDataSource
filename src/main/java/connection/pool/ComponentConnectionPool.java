@@ -30,7 +30,7 @@ public class ComponentConnectionPool {
     }
 
     public void initialize() {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 100; i++) {
             PooledConnection physicalConnection = database.createPhysicalConnection();
             pool.add(physicalConnection);
         }
@@ -40,7 +40,8 @@ public class ComponentConnectionPool {
     public Connection getLogicalConnection() {
         PooledConnection physicalConnection = pool.poll();
         if (physicalConnection == null){
-            return null;
+            System.out.println("========== failover =========");
+            physicalConnection = database.createPhysicalConnection();
         }
 
         return getMyWrapperLogicalConnection(physicalConnection);
@@ -78,6 +79,7 @@ public class ComponentConnectionPool {
     public void closeInvalidConnection(PooledConnection physicalConnection) {
         try {
             physicalConnection.close();
+            pool.clear();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -89,9 +91,11 @@ public class ComponentConnectionPool {
 
     public void setNotWorking() {
         this.working.compareAndSet(true,false);
+        System.out.println(" ???????????????? setNotworking? ??");
     }
     public void setNowWorking() {
-        this.working.compareAndSet(false,true);
+        boolean b = this.working.compareAndSet(false, true);
+        System.out.println("b = " + b);
         System.out.println("database = "+database.toString() + " working = " + working.get());
     }
 
