@@ -1,4 +1,6 @@
-package connection;
+package connection.pool;
+
+import connection.pool.ComponentConnectionPool;
 
 import javax.sql.PooledConnection;
 import java.sql.*;

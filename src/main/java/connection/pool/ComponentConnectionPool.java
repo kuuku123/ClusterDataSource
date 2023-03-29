@@ -1,4 +1,4 @@
-package connection;
+package connection.pool;
 
 import connection.validation.ConnectionValidation;
 import connection.validation.PeriodCheckQuery;
@@ -20,7 +20,7 @@ public class ComponentConnectionPool {
     private Queue<PooledConnection> pool = new LinkedBlockingDeque();
     private ConnectionValidation connectionValidation;
 
-    private AtomicBoolean working = new AtomicBoolean(true);
+    private volatile AtomicBoolean working = new AtomicBoolean(true);
     private ScheduledExecutorService scheduledExecutorService;
 
     public ComponentConnectionPool(Database database, ConnectionValidation connectionValidation) {
@@ -92,6 +92,7 @@ public class ComponentConnectionPool {
     }
     public void setNowWorking() {
         this.working.compareAndSet(false,true);
+        System.out.println("database = "+database.toString() + " working = " + working.get());
     }
 
     public Database getDatabase() {

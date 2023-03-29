@@ -1,4 +1,4 @@
-import connection.ClusterConnectionPool;
+import connection.pool.ClusterConnectionPool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -9,7 +9,7 @@ public class Test {
         ClusterConnectionPool clusterConnectionPool = new ClusterConnectionPool();
         ArrayList<Connection> connectionArrayList = new ArrayList<>();
 
-        for (int i = 0; i<5; i++) {
+        for (int i = 0; i<100; i++) {
             Connection connection = clusterConnectionPool.getConnection();
             System.out.println("adding LogicalConnection = " + connection);
             connectionArrayList.add(connection);

@@ -12,12 +12,11 @@ public class ConnectionValidation {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("select 1 from dual");
             preparedStatement.execute();
+            System.out.println("============== validation success ====================");
             return true;
-        } catch (SQLException e) {
-            System.out.println("e = " + e);
-            return false;
         } catch (Exception e) {
             System.out.println("e = " + e);
+            System.out.println("============== validation failed ====================");
             return false;
         }
         finally {

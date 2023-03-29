@@ -1,4 +1,4 @@
-package connection;
+package connection.pool;
 
 import connection.validation.ConnectionValidation;
 import db.MySQLDatabase;
@@ -20,9 +20,9 @@ public class ClusterConnectionPool {
         mysqlConnectionPool.initialize();
         componentConnectionPoolList.add(mysqlConnectionPool);
 
-        ComponentConnectionPool oracleConnectionPool = new ComponentConnectionPool(new OracleDatabase(), new ConnectionValidation());
-        oracleConnectionPool.initialize();
-        componentConnectionPoolList.add(oracleConnectionPool);
+//        ComponentConnectionPool oracleConnectionPool = new ComponentConnectionPool(new OracleDatabase(), new ConnectionValidation());
+//        oracleConnectionPool.initialize();
+//        componentConnectionPoolList.add(oracleConnectionPool);
     }
 
     public Connection getConnection() {
@@ -44,9 +44,17 @@ public class ClusterConnectionPool {
         while(true) {
             ComponentConnectionPool componentConnectionPool = componentConnectionPoolList.get(index);
             index++;
-            if (!componentConnectionPool.isWorking()) continue;
             if( index == componentConnectionPoolList.size())
                 index = index % componentConnectionPoolList.size();
+            if (!componentConnectionPool.isWorking()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("!!!!!!!!!!!!! " +componentConnectionPool.getDatabase().toString() + " is not working....");
+                continue;
+            }
             Connection connection = componentConnectionPool.getLogicalConnection();
             if (connection != null)
                 return connection;
