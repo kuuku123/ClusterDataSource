@@ -1,5 +1,6 @@
 package connection;
 
+import connection.validation.ConnectionValidation;
 import db.MySQLDatabase;
 import db.OracleDatabase;
 
@@ -15,11 +16,11 @@ public class ClusterConnectionPool {
     private int index = 0;
 
     public ClusterConnectionPool() {
-        ComponentConnectionPool mysqlConnectionPool = new ComponentConnectionPool(new MySQLDatabase());
+        ComponentConnectionPool mysqlConnectionPool = new ComponentConnectionPool(new MySQLDatabase(),new ConnectionValidation());
         mysqlConnectionPool.initialize();
         componentConnectionPoolList.add(mysqlConnectionPool);
 
-        ComponentConnectionPool oracleConnectionPool = new ComponentConnectionPool(new OracleDatabase());
+        ComponentConnectionPool oracleConnectionPool = new ComponentConnectionPool(new OracleDatabase(), new ConnectionValidation());
         oracleConnectionPool.initialize();
         componentConnectionPoolList.add(oracleConnectionPool);
     }
@@ -43,6 +44,7 @@ public class ClusterConnectionPool {
         while(true) {
             ComponentConnectionPool componentConnectionPool = componentConnectionPoolList.get(index);
             index++;
+            if (!componentConnectionPool.isWorking()) continue;
             if( index == componentConnectionPoolList.size())
                 index = index % componentConnectionPoolList.size();
             Connection connection = componentConnectionPool.getLogicalConnection();
