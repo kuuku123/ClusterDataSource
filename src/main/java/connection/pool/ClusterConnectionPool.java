@@ -1,5 +1,6 @@
 package connection.pool;
 
+import connection.statistic.MyStatistic;
 import connection.validation.ConnectionValidation;
 import db.MySQLDatabase;
 import db.OracleDatabase;
@@ -13,16 +14,20 @@ public class ClusterConnectionPool {
     private List<ComponentConnectionPool> componentConnectionPoolList = new ArrayList<>();
     private String policy = "RR_with_Failover";
 
+    private MyStatistic myStatistic;
+
     private int index = 0;
 
-    public ClusterConnectionPool() {
+    public ClusterConnectionPool(MyStatistic myStatistic) {
         ComponentConnectionPool mysqlConnectionPool = new ComponentConnectionPool(new MySQLDatabase(),new ConnectionValidation());
         mysqlConnectionPool.initialize();
         componentConnectionPoolList.add(mysqlConnectionPool);
 
-//        ComponentConnectionPool oracleConnectionPool = new ComponentConnectionPool(new OracleDatabase(), new ConnectionValidation());
-//        oracleConnectionPool.initialize();
-//        componentConnectionPoolList.add(oracleConnectionPool);
+        ComponentConnectionPool oracleConnectionPool = new ComponentConnectionPool(new OracleDatabase(), new ConnectionValidation());
+        oracleConnectionPool.initialize();
+        componentConnectionPoolList.add(oracleConnectionPool);
+
+        this.myStatistic = myStatistic;
     }
 
     public Connection getConnection() {
@@ -42,7 +47,7 @@ public class ClusterConnectionPool {
     private Connection roundRobin() {
 
         while(true) {
-            sleep(1000);
+//            sleep(1000);
             ComponentConnectionPool componentConnectionPool = componentConnectionPoolList.get(index);
             index++;
             if( index == componentConnectionPoolList.size())
@@ -52,8 +57,10 @@ public class ClusterConnectionPool {
                 continue;
             }
             Connection connection = componentConnectionPool.getLogicalConnection();
-            if (connection != null)
+            if (connection != null){
+                myStatistic.update(componentConnectionPool);
                 return connection;
+            }
         }
     }
 

@@ -30,7 +30,7 @@ public class ComponentConnectionPool {
     }
 
     public void initialize() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             PooledConnection physicalConnection = database.createPhysicalConnection();
             pool.add(physicalConnection);
         }
