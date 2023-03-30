@@ -5,12 +5,11 @@ import connection.statistic.MyStatistic;
 
 import java.sql.Connection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoundRobin implements Policy{
 
 
-    private AtomicInteger index = new AtomicInteger(0);
+    private int index = 0;
 
     private MyStatistic myStatistic;
 
@@ -23,9 +22,7 @@ public class RoundRobin implements Policy{
 
         while(true) {
 //            sleep(1000);
-            ComponentConnectionPool componentConnectionPool = componentConnectionPoolList.get(index.get());
-
-            updateIndex(componentConnectionPoolList);
+            ComponentConnectionPool componentConnectionPool = updateIndexAndGetPool(componentConnectionPoolList);
 
             if (!componentConnectionPool.isWorking()) {
                 System.out.println("!!!!!!!!!!!!! " +componentConnectionPool.getDatabase().toString() + " is not working...." + componentConnectionPool.isWorking());
@@ -39,12 +36,12 @@ public class RoundRobin implements Policy{
         }
     }
 
-    private void updateIndex(List<ComponentConnectionPool> componentConnectionPoolList) {
-        synchronized (index) {
-            index.getAndIncrement();
-            if( index.get() == componentConnectionPoolList.size())
-                index = new AtomicInteger(index.get() % componentConnectionPoolList.size());
-        }
+    private synchronized ComponentConnectionPool updateIndexAndGetPool(List<ComponentConnectionPool> componentConnectionPoolList) {
+            ComponentConnectionPool componentConnectionPool = componentConnectionPoolList.get(index);
+            index++;
+            if( index == componentConnectionPoolList.size())
+                index %= componentConnectionPoolList.size();
+            return  componentConnectionPool;
     }
 
     private void sleep(int delay) {
